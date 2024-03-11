@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+	id="WebApp_ID" version="4.0">
+<filter>
+    <filter-name>setCharacterEncodingFilter</filter-name>
+    <filter-class>org.apache.catalina.filters.SetCharacterEncodingFilter</filter-class>
+    <init-param>
+        <param-name>encoding</param-name>
+        <param-value>UTF-8</param-value>
+    </init-param>
+    <init-param>
+        <param-name>forceEncoding</param-name>
+        <param-value>true</param-value>
+    </init-param>
+</filter>
+<filter-mapping>
+    <filter-name>setCharacterEncodingFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+</filter-mapping>
+
+	
+	<display-name>BookStore</display-name>
+
+	<welcome-file-list>
+		<welcome-file>views/clientHomeView.jsp</welcome-file>
+	</welcome-file-list>
+
+	<context-param>
+		<param-name>jdbcURL</param-name>
+		<param-value>jdbc:mysql://localhost:3306/bookshop</param-value>
+	</context-param>
+	<context-param>
+		<param-name>jdbcUsername</param-name>
+		<param-value>root</param-value>
+	</context-param>
+	<context-param>
+		<param-name>jdbcPassword</param-name>
+		<param-value>admin123</param-value>
+	</context-param>
+
+	<servlet>
+		<servlet-name>adminServlet</servlet-name>
+		<servlet-class>vnua.fita.bookstore.servlet.AdminHomeServlet</servlet-class>
+	</servlet>
+	
+	<servlet>
+		<servlet-name>clientServlet</servlet-name>
+		<servlet-class>vnua.fita.bookstore.servlet.ClientHomeServlet</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>deleteBook</servlet-name>
+		<servlet-class>vnua.fita.bookstore.servlet.DeleteBookServlet</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>editBook</servlet-name>
+		<servlet-class>vnua.fita.bookstore.servlet.EditBookServlet</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>detailBook</servlet-name>
+		<servlet-class>vnua.fita.bookstore.servlet.DetailBookServlet</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>search</servlet-name>
+		<servlet-class>vnua.fita.bookstore.servlet.SearchBookServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>adminServlet</servlet-name>
+		<url-pattern>/adminHome</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>deleteBook</servlet-name>
+		<url-pattern>/deleteBook</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>editBook</servlet-name>
+		<url-pattern>/editBook</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>detailBook</servlet-name>
+		<url-pattern>/detailBook</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>search</servlet-name>
+		<url-pattern>/search</url-pattern>
+	</servlet-mapping>
+</web-app>
