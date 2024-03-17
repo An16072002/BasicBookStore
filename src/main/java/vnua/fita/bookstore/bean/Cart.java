@@ -18,19 +18,19 @@ public class Cart {
 	}
 
 	public void addCartItemToCart(int bookId, CartItem cartItem) {
-		CartItem oldCartItem = cartItemList.get(bookId);
-		if (oldCartItem != null) {
-			totalCost = oldCartItem.getQuantity() * oldCartItem.getSelectedBook().getPrice();
-		}
-		cartItemList.put(bookId, cartItem);
-		totalCost += cartItem.getQuantity() * cartItem.getSelectedBook().getPrice();
+	    CartItem oldCartItem = cartItemList.get(bookId);
+	    if (oldCartItem != null) {
+	        totalCost -= oldCartItem.getQuantity() * oldCartItem.getSelectedBook().getPrice();
+	    }
+	    cartItemList.put(bookId, cartItem);
+	    totalCost += cartItem.getQuantity() * cartItem.getSelectedBook().getPrice();
 	}
 
 	public void removeCartItemToCart(int bookId) {
-		CartItem cartItem = cartItemList.get(bookId);
-		cartItemList.remove(bookId);
-		totalCost = cartItem.getQuantity() * cartItem.getSelectedBook().getPrice();
+	    CartItem cartItem = cartItemList.remove(bookId);
+	    totalCost -= cartItem.getQuantity() * cartItem.getSelectedBook().getPrice();
 	}
+
 
 	public Map<Integer, CartItem> getCartItemList() {
 		return cartItemList;

@@ -119,20 +119,26 @@ public class MyUtil {
 		response.addCookie(cookieUsername);
 		
 		Cookie cookieToken=new Cookie(Constant.TOKEN_STORE_IN_COOKIE_OF_BOOKSTORE,null);
-		cookieUsername.setMaxAge(0);
+		cookieToken.setMaxAge(0);
 		response.addCookie(cookieToken);
 	}
 	
-	public static void storeUserCookie(HttpServletResponse response, User user) {
-		System.out.println("Store user cookie");
-		Cookie cookieUsername=new Cookie(Constant.USERNAME_STORE_IN_COOKIE_OF_BOOKSTORE, user.getUsername());
-		cookieUsername.setMaxAge(24*60*60);
-		response.addCookie(cookieUsername);
-		
-		Cookie cookieToken=new Cookie(Constant.TOKEN_STORE_IN_COOKIE_OF_BOOKSTORE, MyUtil.createTokenFromUserInfo(user));
-		cookieUsername.setMaxAge(24*60*60);
-		response.addCookie(cookieToken);
+	public static void storeUserCookie(HttpServletResponse response, User user, boolean rememberMe) {
+	    System.out.println("Store user cookie");
+	    Cookie cookieUsername = new Cookie(Constant.USERNAME_STORE_IN_COOKIE_OF_BOOKSTORE, user.getUsername());
+	    cookieUsername.setMaxAge(rememberMe ? 24 * 60 * 60 : -1); // Remember me trong 24 giờ
+	    response.addCookie(cookieUsername);
+
+	    if (rememberMe) {
+	        String token = MyUtil.createTokenFromUserInfo(user);
+	        if (token != null) {
+	            Cookie cookieToken = new Cookie(Constant.TOKEN_STORE_IN_COOKIE_OF_BOOKSTORE, token);
+	            cookieToken.setMaxAge(24 * 60 * 60);
+	            response.addCookie(cookieToken);
+	        }
+	    }
 	}
+
 	
 	public static String createTokenFromUserInfo(User user) {
 		// TODO Auto-generated method stub

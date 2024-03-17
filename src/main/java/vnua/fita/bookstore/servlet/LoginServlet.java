@@ -21,6 +21,7 @@ import vnua.fita.bookstore.util.MyUtil;
 public class LoginServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private UserDAO userDAO=new UserDAO();
+	
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		RequestDispatcher rd = this.getServletContext()
@@ -55,7 +56,7 @@ public class LoginServlet extends HttpServlet {
 				MyUtil.storeLoginedUser(session, user);
 				boolean remember="Y".equals(rememberMe);
 				if(remember) {
-					MyUtil.storeUserCookie(response, user);
+					MyUtil.storeUserCookie(response, user,remember);
 				}else {
 					MyUtil.deleteUserCookie(response);
 				}

@@ -12,7 +12,7 @@ public class LoginForm {
 	public LoginForm(String username, String password,String rememberMe) {
 		this.username = username;
 		this.password = password;
-		this.rememberMe=rememberMe!=null?"checked":"";
+		this.rememberMe=rememberMe != null ? "checked" : "";
 	}
 	public String getUsername() {
 		return username;

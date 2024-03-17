@@ -6,6 +6,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+
+
+
 import java.sql.Statement;
 import java.util.Date;
 
@@ -155,145 +158,146 @@ public class OrderDAO {
         return insertResult;
     }
     
-    public List<Order> getOrderList(String customerUserName) {
-        Map<Integer, Order> orderListHashMap = new HashMap<Integer,Order>();
-        String sql = "SELECT ord.*, ordb.quantity, ordb.price, b.*, u.* " +
-                "FROM tblorder ord " +
-                "INNER JOIN tblorder_book ordb ON ord.order_id COLLATE utf8mb4_unicode_ci = ordb.order_id " +
-                "INNER JOIN tblbook b ON ordb.book_id COLLATE utf8mb4_unicode_ci = b.book_id " +
-                "INNER JOIN tbluser u ON ord.customer_username COLLATE utf8mb4_unicode_ci = u.username " +
-                "WHERE ord.customer_username = ? " +
-                "ORDER BY ord.order_date DESC";
-        Connection jdbcConnection = DBConnection.createConnection();
-        
-        try {
-            PreparedStatement preStatement = jdbcConnection.prepareStatement(sql);
-            preStatement.setString(1, customerUserName);
-            ResultSet resultSet = preStatement.executeQuery();
-            resultSet.next();
-            while (resultSet.next()) {                
-            	int orderId = resultSet.getInt("order_id");
-                if (!orderListHashMap.containsKey(orderId)) {
-                    Order order = new Order();
-                    fillOrderFromResultSet(resultSet, order);
-                    List<CartItem> orderBookList = new ArrayList<CartItem>();
-                    Book orderBook = new Book();
-                    fillBookFromResultSet(resultSet, orderBook);
-                    CartItem cartItem = new CartItem(orderBook, resultSet.getInt("ordb.quantity"));
-                    orderBookList.add(cartItem);
-                    order.setOrderBookList(orderBookList);
-                    orderListHashMap.put(orderId, order);
-                } else {
-                    Order order = orderListHashMap.get(orderId);
-                    List<CartItem> orderBookList = order.getOrderBookList();
-                    Book orderBook = new Book();
-                    fillBookFromResultSet(resultSet, orderBook);
-                    CartItem cartItem = new CartItem(orderBook, resultSet.getInt("ordb.quantity"));
-                    orderBookList.add(cartItem);
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-        		DBConnection.closeConnection(jdbcConnection);
-        }
+	public List<Order> getOrderList(String customerUserName) {
+		Map<Integer, Order> orderListMap = new HashMap<Integer, Order>();
+		String sql = "SELECT t.*, ordb.quantity, ordb.price, b.*, u.* " +
+	             "FROM tblorder t " +
+	             "INNER JOIN tblorder_book ordb ON t.order_id = ordb.order_id " +
+	             "INNER JOIN tblbook b ON b.book_id = ordb.book_id " +
+	             "INNER JOIN tbluser u ON u.username COLLATE utf8mb4_unicode_ci = t.customer_username COLLATE utf8mb4_unicode_ci " +
+	             "WHERE t.customer_username = ? " +
+	             "ORDER BY t.order_date DESC";
 
-        Collection<Order> values = orderListHashMap.values();
-        ArrayList<Order> orderList = new ArrayList<Order>(values);
-        Collections.sort(orderList);
-        return orderList;
-    }
-    public List<Order> getOrderList(byte orderStatus) {
-        Map<Integer, Order> orderListHashMap = new HashMap<Integer,Order>();
-        String sql = "SELECT ord.*, ordb.quantity, ordb.price, b.*, u.* " +
-                "FROM tblorder ord " +
-                "INNER JOIN tblorder_book ordb ON ord.order_id COLLATE utf8mb4_unicode_ci = ordb.order_id " +
-                "INNER JOIN tblbook b ON ordb.book_id COLLATE utf8mb4_unicode_ci = b.book_id " +
-                "INNER JOIN tbluser u ON ord.customer_username COLLATE utf8mb4_unicode_ci = u.username " +
-                "WHERE ord.order_status = ? " +
-                "ORDER BY ord.order_date DESC, ord.order_date DESC";
-        Connection jdbcConnection = DBConnection.createConnection();
-        
-        try {
-            PreparedStatement preStatement = jdbcConnection.prepareStatement(sql);
-            preStatement.setByte(1, orderStatus);
-            ResultSet resultSet = preStatement.executeQuery();
-            resultSet.next();
-            while (resultSet.next()) {                
-            	int orderId = resultSet.getInt("order_id");
-                if (!orderListHashMap.containsKey(orderId)) {
-                    Order order = new Order();
-                    fillOrderFromResultSet(resultSet, order);
-                    List<CartItem> orderBookList = new ArrayList<CartItem>();
-                    Book orderBook = new Book();
-                    fillBookFromResultSet(resultSet, orderBook);
-                    CartItem cartItem = new CartItem(orderBook, resultSet.getInt("ordb.quantity"));
-                    orderBookList.add(cartItem);
-                    order.setOrderBookList(orderBookList);
-                    orderListHashMap.put(orderId, order);
-                } else {
-                    Order order = orderListHashMap.get(orderId);
-                    List<CartItem> orderBookList = order.getOrderBookList();
-                    Book orderBook = new Book();
-                    fillBookFromResultSet(resultSet, orderBook);
-                    CartItem cartItem = new CartItem(orderBook, resultSet.getInt("ordb.quantity"));
-                    orderBookList.add(cartItem);
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-        		DBConnection.closeConnection(jdbcConnection);
-        }
-
-        Collection<Order> values = orderListHashMap.values();
-        ArrayList<Order> orderList = new ArrayList<Order>(values);
-        Collections.sort(orderList);
-        return orderList;
-    }
-    
-    public boolean updateOrder(int orderId,byte orderStatus) {
-		boolean updateResult = false;
-		String sql = "UPDATE tblorder SET order_status = ?, status_date = ?, payment_status = ? "
-					+"WHERE order_id = ?";
-		
-		Date statusDate = new Date();
-		Connection jdbcConnection = DBConnection.createConnection();
 		try {
-			 PreparedStatement preStatement = jdbcConnection.prepareStatement(sql);
-	            preStatement.setByte(1, orderStatus);
-	            preStatement.setString(2, MyUtil.convertDateToString(statusDate));
-	            preStatement.setBoolean(3, Constant.DELIVERED_ORDER_STATUS == orderStatus ? true:false);
-	            preStatement.setInt(4, orderId);
-	            updateResult = preStatement.executeUpdate()>0;
-	            
-		}catch(SQLException e) {
+			Connection jdbcConnection = DBConnection.createConnection();
+			PreparedStatement preStatement = jdbcConnection.prepareStatement(sql);
+			preStatement.setString(1, customerUserName);
+			ResultSet resultSet = preStatement.executeQuery();
+			while (resultSet.next()) {
+				int orderId = resultSet.getInt("order_id");
+				if (!orderListMap.containsKey(orderId)) {
+					Order order = new Order();
+					fillOrderFromResultSet(resultSet, order);
+					List<CartItem> orderBookList = new ArrayList<CartItem>();
+					Book orderBook = new Book();
+					fillBookFromResultSet(resultSet, orderBook);
+					CartItem cartItem = new CartItem(orderBook, resultSet.getInt("ordb.quantity"));
+					orderBookList.add(cartItem);
+					order.setOrderBookList(orderBookList);
+					orderListMap.put(orderId, order);
+				} else {
+					Order order = orderListMap.get(orderId);
+					List<CartItem> orderBookList = order.getOrderBookList();
+					Book book = new Book();
+					fillBookFromResultSet(resultSet, book);
+					CartItem cartItem = new CartItem(book, resultSet.getInt("ordb.quantity"));
+					orderBookList.add(cartItem);
+				}
+			}
+		} catch (SQLException e) {
 			e.printStackTrace();
-		}finally {
+		} finally {
+			
+		}
+		Collection<Order> values = orderListMap.values();
+		List<Order> list = new ArrayList<Order>(values);
+		Collections.sort(list);
+		return list;
+	}
+    public List<Order> getOrderList(byte orderStatus) {
+		Map<Integer, Order> orderListHashMap = new HashMap<Integer, Order>();
+		String sql = "SELECT t.*,ordb.quantity ,ordb.price, b.*,u.* FROM tblorder t\r\n"
+				+ "INNER JOIN tblorder_book ordb ON t.order_id=ordb.order_id \r\n"
+				+ "INNER JOIN tblbook b ON ordb.book_id = b.book_id\r\n"
+				+ "INNER JOIN tbluser u ON t.customer_username COLLATE utf8mb4_unicode_ci = u.username COLLATE utf8mb4_unicode_ci\r\n" + "WHERE t.order_status = ?\r\n"
+				+ "ORDER BY t.status_date DESC, t.order_date DESC";
+		Connection jdbcConnection = DBConnection.createConnection();
+		ResultSet resultSet;
+		try {
+			PreparedStatement preStatement = jdbcConnection.prepareStatement(sql);
+			preStatement.setByte(1, orderStatus);
+			resultSet = preStatement.executeQuery();
+			while (resultSet.next()) {
+				int orderId = resultSet.getInt("order_id");
+				if (!orderListHashMap.containsKey(orderId)) {
+					Order order = new Order();
+					fillOrderFromResultSet(resultSet, order);
+					List<CartItem> orderBookList = new ArrayList<CartItem>();
+					Book orderBook = new Book();
+					fillBookFromResultSet(resultSet, orderBook);
+					CartItem cartItem = new CartItem(orderBook, resultSet.getInt("ordb.quantity"));
+					orderBookList.add(cartItem);
+					order.setOrderBookList(orderBookList);
+					orderListHashMap.put(orderId, order);
+				} else {
+					Order order = orderListHashMap.get(orderId);
+					List<CartItem> orderBookList = order.getOrderBookList();
+					Book orderBook = new Book();
+					fillBookFromResultSet(resultSet, orderBook);
+					CartItem cartItem = new CartItem(orderBook, resultSet.getInt("ordb.quantity"));
+					orderBookList.add(cartItem);
+				}
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		} finally {
+			
 			DBConnection.closeConnection(jdbcConnection);
 		}
-		return updateResult;
+		Collection<Order> values = orderListHashMap.values();
+		ArrayList<Order> orderList = new ArrayList<Order>(values);
+		Collections.sort(orderList);
+		// TODO Auto-generated method stub
+		return orderList;
 	}
-    public boolean updateOrderNo(int orderId,byte orderStatus) {
+    
+    public boolean updateOrder(int orderId, byte orderStatus) {
 		boolean updateResult = false;
-		String sql = "UPDATE tblorder SET order_no = ?, order_approve_date = ?, order_status = ?, status_date = ?, payment_status = ? "
-					+"WHERE order_id = ?";
+		// TODO Auto-generated method stub
+		String sql = "UPDATE tblorder SET order_status = ?, status_date = ?, payment_status = ?\r\n"
+				+ "WHERE order_id = ?";
 		Connection jdbcConnection = DBConnection.createConnection();
 		Date now = new Date();
 		String orderNo = MyUtil.createOrderNo(orderId);
 		try {
-			 PreparedStatement preStatement = jdbcConnection.prepareStatement(sql);
-	            preStatement.setString(1, orderNo);
-	            preStatement.setString(2, MyUtil.convertDateToString(now));
-	            preStatement.setByte(3, orderStatus);
-	            preStatement.setString(4, MyUtil.convertDateToString(now));
-	            preStatement.setBoolean(5, true);
-	            preStatement.setInt(6, orderId);
-	            updateResult = preStatement.executeUpdate()>0;
-	            
-		}catch(SQLException e) {
+			PreparedStatement preStatement = jdbcConnection.prepareStatement(sql);
+			preStatement.setByte(1, orderStatus);
+			preStatement.setString(2, MyUtil.convertDateToString(now));
+			preStatement.setBoolean(3, Constant.DELEVERED_ORDER_STATUS == orderStatus);
+			preStatement.setInt(4, orderId);
+			
+			updateResult = preStatement.executeUpdate() > 0;
+		} catch (Exception e) {
+			// TODO: handle exception
 			e.printStackTrace();
-		}finally {
+		} finally {
+			DBConnection.closeConnection(jdbcConnection);
+		}
+		return updateResult;
+	}
+    public boolean updateOrderNo(int orderId, byte orderStatus) {
+		boolean updateResult = false;
+		// TODO Auto-generated method stub
+		String sql = "UPDATE tblorder t SET t.order_no = ?,t.order_approve_date = ?, t.order_status = ?, t.status_date = ?, t.payment_status = ?\r\n"
+				+ "WHERE t.order_id = ?";
+		Connection jdbcConnection = DBConnection.createConnection();
+		Date now = new Date();
+		String orderNo = MyUtil.createOrderNo(orderId);
+		try {
+			PreparedStatement preStatement = jdbcConnection.prepareStatement(sql);
+			preStatement.setString(1, orderNo);
+			preStatement.setString(2, MyUtil.convertDateToString(now));
+			preStatement.setByte(3, orderStatus);
+			preStatement.setString(4, MyUtil.convertDateToString(now));
+			preStatement.setBoolean(5, true);
+			preStatement.setInt(6, orderId);
+			updateResult = preStatement.executeUpdate() > 0;
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+		} finally {
+		
 			DBConnection.closeConnection(jdbcConnection);
 		}
 		return updateResult;
@@ -307,24 +311,25 @@ public class OrderDAO {
         orderBook.setImagePath(resultSet.getString("b.image_path"));
     }
 
-    private void fillOrderFromResultSet(ResultSet resultSet, Order order) throws SQLException {
-        order.setOrderId(resultSet.getInt("order_id"));
-        order.setOrderNo(resultSet.getString("ord.order_no")); // Thay đổi tên cột order_no từ "t.order_no" thành "ord.order_no"
-        order.setOrderDate(resultSet.getTimestamp("ord.order_date")); // Thay đổi tên cột order_date từ "t.order_date" thành "ord.order_date"
-        order.setOrderApproveDate(resultSet.getTimestamp("ord.order_approve_date")); // Thay đổi tên cột order_approve_date từ "t.order_approve_date" thành "ord.order_approve_date"
-        order.setOrderStatus(resultSet.getByte("ord.order_status")); // Thay đổi tên cột order_status từ "t.order_status" thành "ord.order_status"
-        order.setStatusDate(resultSet.getTimestamp("ord.status_date")); // Thay đổi tên cột status_date từ "t.status_date" thành "ord.status_date"
-        order.setPaymentMode(resultSet.getString("ord.payment_mode")); // Thay đổi tên cột payment_mode từ "t.payment_mode" thành "ord.payment_mode"
-        order.setPaymentStatus(resultSet.getBoolean("ord.payment_status")); // Thay đổi tên cột payment_status từ "t.payment_status" thành "ord.payment_status"
-        order.setTotalCost(resultSet.getInt("ord.total_cost")); // Thay đổi tên cột total_cost từ "t.total_cost" thành "ord.total_cost"
-        order.setDeliveryAddress(resultSet.getString("ord.delivery_address")); // Thay đổi tên cột delivery_address từ "t.delivery_address" thành "ord.delivery_address"
-        order.setPaymentImagePath(resultSet.getString("ord.payment_img")); // Thay đổi tên cột payment_img từ "t.payment_img" thành "ord.payment_img"
+	private void fillOrderFromResultSet(ResultSet resultSet, Order order) throws SQLException {
+		// TODO Auto-generated method stub
+		order.setOrderId(resultSet.getInt("order_id"));
+		order.setOrderNo(resultSet.getString("t.order_no"));
+		order.setOrderDate(resultSet.getTimestamp("t.order_date"));
+		order.setOrderApproveDate(resultSet.getTimestamp("t.order_approve_date"));
+		order.setOrderStatus(resultSet.getByte("t.order_status"));
+		order.setStatusDate(resultSet.getTimestamp("t.status_date"));
+		order.setPaymentMode(resultSet.getString("t.payment_mode"));
+		order.setPaymentStatus(resultSet.getBoolean("t.payment_status"));
+		order.setTotalCost(resultSet.getInt("t.total_cost"));
+		order.setDeliveryAddress(resultSet.getString("t.delivery_address"));
+		order.setPaymentImagePath(resultSet.getString("t.payment_img"));
 
-        User customer = new User();
-        customer.setUsername(resultSet.getString("u.username"));
-        customer.setFullname(resultSet.getString("u.fullname"));
-        customer.setMobile(resultSet.getString("u.mobile"));
-        order.setCustomer(customer);
-    }
+		User user = new User();
+		user.setUsername(resultSet.getString("u.username"));
+		user.setFullname(resultSet.getString("u.fullname"));
+		user.setMobile(resultSet.getString("u.mobile"));
+		order.setCustomer(user);
+	}
 
 }

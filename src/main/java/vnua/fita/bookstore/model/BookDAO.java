@@ -84,7 +84,7 @@ public class BookDAO {
 	    try (Connection jdbcConnection = DBConnection.createConnection();
 	         PreparedStatement preStatement = jdbcConnection.prepareStatement(sql)) {
 
-	        preStatement.setInt(1, Constant.DELIVERED_ORDER_STATUS);
+	        preStatement.setInt(1, Constant.DELEVERED_ORDER_STATUS);
 	        preStatement.setString(2, fromDate);
 	        preStatement.setString(3, toDate);
 
@@ -133,7 +133,7 @@ public class BookDAO {
 	    try (Connection jdbcConnection = DBConnection.createConnection();
 	         PreparedStatement preStatement = jdbcConnection.prepareStatement(sql)) {
 
-	        preStatement.setInt(1, Constant.DELIVERED_ORDER_STATUS);
+	        preStatement.setInt(1, Constant.DELEVERED_ORDER_STATUS);
 	        preStatement.setString(2, fromDate);
 	        preStatement.setString(3, toDate);
 	        preStatement.setString(4, "%" + keyword + "%");
@@ -313,81 +313,86 @@ public class BookDAO {
 		return insertResult;
 	}
 	
-	public List<Book> listAllBooks(int offset, int noOfRecords, String keyword) {
-	    List<Book> listBook = new ArrayList<Book>();
-	    String sql = "SELECT * FROM tblbook";
-	    if (keyword != null && !keyword.isEmpty()) {
-	        sql += " WHERE title LIKE ?";
-	    }
-
-	    sql += " ORDER BY create_date DESC"; // Đưa ORDER BY xuống đây
-	    sql += " LIMIT ?,?";
-
-	    Connection jdbcConnection = DBConnection.createConnection();
-
-	    try {
-	        int index = 0;
-	        PreparedStatement preStatement = jdbcConnection.prepareStatement(sql);
-	        if (keyword != null && !keyword.isEmpty()) {
-	            preStatement.setString(++index, "%" + keyword + "%");
-	        }
-	        preStatement.setInt(++index, offset);
-	        preStatement.setInt(++index, noOfRecords);
-
-	        ResultSet resultSet = preStatement.executeQuery();
-	        while (resultSet.next()) {
-	            int id = resultSet.getInt("book_id");
-	            String title = resultSet.getString("title");
-	            String author = resultSet.getString("author");
-	            int price = resultSet.getInt("price");
-
-	            int quantityInStock = resultSet.getInt("quantity_in_stock");
-
-	            String detail = resultSet.getString("detail");
-
-	            String imagePath = resultSet.getString("image_path");
-
-	            Book book = new Book(id, title, author, price, quantityInStock);
-
-	            book.setDetail(detail);
-	            book.setImagePath(imagePath);
-	            listBook.add(book);
-	        }
-	    } catch (SQLException e) {
-	        e.printStackTrace();
-	    } finally {
-
-	        DBConnection.closeConnection(jdbcConnection);
-
-	    }
-	    return listBook;
-	}
-	
-	
-	
 	public int getNoOfRecords(String keyword) {
-		String sql = "SELECT count(book_id) FROM tblbook";
-		if(keyword != null && !keyword.isEmpty()) {
-			sql += "WHERE title LIKE ?";
-		}
-		
-		 sql += " ORDER BY create_date DESC";
-		Connection jdbcConnection =DBConnection.createConnection();
-		try {
-			PreparedStatement preStatement = jdbcConnection.prepareStatement(sql);
-			
-			if(keyword != null && !keyword.isEmpty()) {
-				preStatement.setString(1, "%"+keyword+"%");
-			}
-			ResultSet resultSet = preStatement.executeQuery();
-			if(resultSet.next()) {
-				return resultSet.getInt(1);
-			}
-			}catch(SQLException e) {
-				e.printStackTrace();
-			}finally {
-				
-				DBConnection.closeConnection(jdbcConnection);
-}
-			return 0;
-		}}
+        String sql = "SELECT count(book_id) FROM tblbook";
+        if (keyword != null && !keyword.isEmpty()) {
+            sql += " WHERE title LIKE ?";
+        }
+
+        Connection jdbcConnection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        int count = 0;
+
+        try {
+            jdbcConnection = DBConnection.createConnection();
+            preparedStatement = jdbcConnection.prepareStatement(sql);
+
+            if (keyword != null && !keyword.isEmpty()) {
+                preparedStatement.setString(1, "%" + keyword + "%");
+            }
+
+            resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                count = resultSet.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBConnection.closeResultSet(resultSet);
+            DBConnection.closePreparedStatement(preparedStatement);
+            DBConnection.closeConnection(jdbcConnection);
+        }
+        return count;
+    }
+
+    public List<Book> listAllBooks(int offset, int noOfRecords, String keyword) {
+        List<Book> listBook = new ArrayList<>();
+        String sql = "SELECT * FROM tblbook";
+        if (keyword != null && !keyword.isEmpty()) {
+            sql += " WHERE title LIKE ?";
+        }
+
+        sql += " ORDER BY create_date DESC"; // Đưa ORDER BY xuống đây
+        sql += " LIMIT ?,?";
+
+        Connection jdbcConnection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+
+        try {
+            jdbcConnection = DBConnection.createConnection();
+            preparedStatement = jdbcConnection.prepareStatement(sql);
+
+            int index = 0;
+            if (keyword != null && !keyword.isEmpty()) {
+                preparedStatement.setString(++index, "%" + keyword + "%");
+            }
+            preparedStatement.setInt(++index, offset);
+            preparedStatement.setInt(++index, noOfRecords);
+
+            resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                int id = resultSet.getInt("book_id");
+                String title = resultSet.getString("title");
+                String author = resultSet.getString("author");
+                int price = resultSet.getInt("price");
+                int quantityInStock = resultSet.getInt("quantity_in_stock");
+
+                String detail = resultSet.getString("detail");
+                String imagePath = resultSet.getString("image_path");
+
+                Book book = new Book(id, title, author, price, quantityInStock);
+                book.setDetail(detail);
+                book.setImagePath(imagePath);
+                listBook.add(book);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBConnection.closeResultSet(resultSet);
+            DBConnection.closePreparedStatement(preparedStatement);
+            DBConnection.closeConnection(jdbcConnection);
+        }
+        return listBook;
+    }}

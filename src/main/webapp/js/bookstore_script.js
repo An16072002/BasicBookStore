@@ -115,45 +115,69 @@ function getInfo(){
 	}
 }
 
-function validateValueAndUpdateCart(element,maxQuantity,bookId,price){
-	var newQuantity = element.value;
-	if(newQuantity > maxQuantity){
-		alert('Giá trị không được vượt quá : '+maxQuantity);
-	}else if(newQuantity>0){
-		updateQuantityOfCartItem(newQuantity,bookId);
-		
-		document.getElementById("subtotal"+bookId).innerText = toComma(newQuantity*price);
-		
-		let subtotalList = document.querySelectorAll('[id^="subtotal"]');
-		let total = 0;
-		for(let i = 0;i<subtotalList.length;i++){
-			total+=parseInt(subtotalList[1].innerText.replace(/,/g,""));
-		}
-		document.getElementById("total").innerText = toComma(total);
-	}
+function plusValueAndUpdateCart(elementId, maxQuantity) {
+    let quantity = parseInt(document.getElementById(elementId).value);
+    if (quantity + 1 <= maxQuantity) {
+        document.getElementById(elementId).value = quantity + 1;
+        updateQuantityOfCartItem(quantity + 1, elementId.substring(8), maxQuantity);
+    } else {
+        alert('Giá trị không được vượt quá : ' + maxQuantity);
+    }
 }
+
+function minusValueAndUpdateCart(elementId) {
+    let quantity = parseInt(document.getElementById(elementId).value);
+    if (quantity - 1 >= 1) {
+        document.getElementById(elementId).value = quantity - 1;
+        updateQuantityOfCartItem(quantity - 1, elementId.substring(8), maxQuantity);
+    }
+}
+
+function updateQuantityOfCartItem(newQuantity, bookId, maxQuantity) {
+    var url = '${pageContext.request.contextPath}/cartBook/addToCart?bookId=' + bookId + '&quatityPurchased=' + newQuantity;
+    if (window.XMLHttpRequest) {
+        request = new XMLHttpRequest();
+    } else if (window.ActiveXObject) {
+        request = new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    try {
+        request.onreadystatechange = function() {
+            if (request.readyState == 4) {
+                if (request.status == 200) {
+                    // Update subtotal value
+                    var subtotalElement = document.getElementById("subtotal" + bookId);
+                    if (subtotalElement) {
+                        subtotalElement.innerText = request.responseText;
+                    } else {
+                        console.error("Element with ID 'subtotal" + bookId + "' not found.");
+                    }
+
+                    // Calculate total
+                    var subtotalList = document.querySelectorAll('[id^="subtotal"]');
+                    var total = 0;
+                    for (var i = 0; i < subtotalList.length; i++) {
+                        total += parseInt(subtotalList[i].innerText.replace(/,/g, ""));
+                    }
+                    document.getElementById("total").innerText = toComma(total);
+                } else {
+                    alert("Error: " + request.status + " " + request.statusText);
+                }
+            }
+        };
+        request.open("GET", url, true);
+        request.send();
+    } catch (e) {
+        alert("Unable to connect to server");
+    }
+}
+
+
 
 function toComma(n){
 	return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,",");
 }
 
-function minusValueAndUpdateCart(elementId){
-	var quantity = parseInt(document.getElementById(elementId).value);
-	if(quantity - 1 >=1){
-		document.getElementById(elementId).value = quantity - 1;
-		document.getElementById(elementId).onchange();
-	}
-}
 
-function plusValueAndUpdateCart(elementId,maxQuantity){
-	var quantity = parseInt(document.getElementById(elementId).value);
-	if(quantity + 1 <=maxQuantity){
-		document.getElementById(elementId).value = quantity +1;
-		document.getElementById(elementId).onchange();
-	}else{
-		alert('Giá trị không được vượt quá : ' + maxQuantity);
-	}
-}
 
 function loadImage(event){
 	let output = document.getElementById('bookImage');

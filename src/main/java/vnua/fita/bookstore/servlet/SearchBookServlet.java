@@ -27,6 +27,7 @@ public class SearchBookServlet extends HttpServlet {
 		if (name != null && !name.isEmpty()) {
 			List<Book> listBook = bookDAO.searchBooks(keyword);
 			req.setAttribute("searchListBook", listBook);
+			req.setAttribute("keyword", keyword);
 			RequestDispatcher dispatcher = req.getServletContext()
 					.getRequestDispatcher("/views/searchResultArea.jsp");
 			dispatcher.forward(req, resp);

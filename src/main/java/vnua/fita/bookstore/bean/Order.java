@@ -100,7 +100,7 @@ public class Order implements Comparable<Order> {
 			case Constant.DELEVERING_ORDER_STATUS:
 				this.orderStatusDescription = "Đang giao hàng";
 				break;
-			case Constant.DELIVERED_ORDER_STATUS:
+			case Constant.DELEVERED_ORDER_STATUS:
 				this.orderStatusDescription = "Đã giao hàng";
 				break;
 			case Constant.CANCEL_ORDER_STATUS:
@@ -109,7 +109,7 @@ public class Order implements Comparable<Order> {
 			case Constant.REJECT_ORDER_STATUS:
 				this.orderStatusDescription = "Khách trả hàng";
 				break;
-			case Constant.NOT_AVAILABLE_ORDER_STATUS:
+			case Constant.NOT_AVAIABLE_ORDER_STATUS:
 				this.orderStatusDescription = "Hàng không còn đủ";
 				break;
 		}

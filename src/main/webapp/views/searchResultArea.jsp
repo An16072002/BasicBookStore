@@ -7,6 +7,9 @@
 <body>
 
 	<table border="1" cellpadding="5">
+	<caption>
+	<b>${keyword}</b>
+	</caption>
 		<caption>
 			<h2>List of Books from Ajax</h2>
 		</caption>

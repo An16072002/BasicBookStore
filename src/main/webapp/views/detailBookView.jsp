@@ -44,7 +44,7 @@
             margin-right: 20px;
         }
         .book-details h2 {
-            color: #007bff;
+            color: black;
         }
         .book-details p {
             line-height: 1.6;
@@ -119,7 +119,7 @@
                             </td>
                         </tr>
                         <tr align="center">
-                            <td colspan="2"><a href="adminHome">Bỏ qua</a></td>
+                            <td colspan="2"><a href="clientHome">Bỏ qua</a></td>
                         </tr>
                     </table>
                     <div style="margin-top: 20px;">

@@ -45,8 +45,8 @@ public class UserDAO {
 
 			if (resultSet.next()) {
 				return new User(resultSet.getString("username"), resultSet.getString("password"),
-						resultSet.getString("fullname"), resultSet.getString("role"), resultSet.getString("email"),
-						resultSet.getString("mobile"), resultSet.getInt("address"));
+						resultSet.getString("fullname"), resultSet.getInt("role"), resultSet.getString("email"),
+						resultSet.getString("mobile"), resultSet.getString("address"));
 			}
 		} catch (Exception e) {
 			// TODO: handle exception
